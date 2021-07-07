@@ -39,7 +39,7 @@ class SupConLoss(nn.Module):
             raise ValueError('`features` needs to be [bsz, n_views, ...],'
                              'at least 3 dimensions are required')
         if len(features.shape) > 3:
-            features = features.view(features.shape[0], features.shape[1], -1)#B*N*chw
+            features = features.view(features.shape[0], features.shape[1], -1)#B*N*C
 
         batch_size = features.shape[0]
         if labels is not None and mask is not None:
@@ -55,7 +55,7 @@ class SupConLoss(nn.Module):
             mask = mask.float().to(device)
 
         contrast_count = features.shape[1]
-        contrast_feature = torch.cat(torch.unbind(features, dim=1), dim=0)#unbind将每个VIEW的特征切片 单独拿出来 B ×CHW，cat然后顺序拼接起来
+        contrast_feature = torch.cat(torch.unbind(features, dim=1), dim=0)#unbind将每种VIEW的特征切片 "B ×C"  单独拿出来形成包含N个“BXC”的元组，cat然后顺序拼接起来 BNxC
         if self.contrast_mode == 'one':
             anchor_feature = features[:, 0]
             anchor_count = 1
@@ -67,14 +67,14 @@ class SupConLoss(nn.Module):
 
         # compute logits
         anchor_dot_contrast = torch.div(
-            torch.matmul(anchor_feature, contrast_feature.T),
+            torch.matmul(anchor_feature, contrast_feature.T),#BNxC CXBN = BNXBN 相似矩阵
             self.temperature)
         # for numerical stability
         logits_max, _ = torch.max(anchor_dot_contrast, dim=1, keepdim=True)
         logits = anchor_dot_contrast - logits_max.detach()
 
         # tile mask
-        mask = mask.repeat(anchor_count, contrast_count)
+        mask = mask.repeat(anchor_count, contrast_count)#mask 重复N×N次 构成N×N×B×B 的矩阵
         # mask-out self-contrast cases
         logits_mask = torch.scatter(
             torch.ones_like(mask),
