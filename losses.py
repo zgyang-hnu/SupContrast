@@ -39,7 +39,7 @@ class SupConLoss(nn.Module):
             raise ValueError('`features` needs to be [bsz, n_views, ...],'
                              'at least 3 dimensions are required')
         if len(features.shape) > 3:
-            features = features.view(features.shape[0], features.shape[1], -1)
+            features = features.view(features.shape[0], features.shape[1], -1)#B*N*chw
 
         batch_size = features.shape[0]
         if labels is not None and mask is not None:
@@ -55,7 +55,7 @@ class SupConLoss(nn.Module):
             mask = mask.float().to(device)
 
         contrast_count = features.shape[1]
-        contrast_feature = torch.cat(torch.unbind(features, dim=1), dim=0)
+        contrast_feature = torch.cat(torch.unbind(features, dim=1), dim=0)#unbind将每个VIEW的特征切片 单独拿出来 B ×CHW，cat然后顺序拼接起来
         if self.contrast_mode == 'one':
             anchor_feature = features[:, 0]
             anchor_count = 1
