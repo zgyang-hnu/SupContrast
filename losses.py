@@ -74,7 +74,7 @@ class SupConLoss(nn.Module):
         logits = anchor_dot_contrast - logits_max.detach()
 
         # tile mask
-        mask = mask.repeat(anchor_count, contrast_count)#mask 重复N×N次 构成N×N×B×B 的矩阵
+        mask = mask.repeat(anchor_count, contrast_count)#B×B的mask 重复N×N次(即各个方向重复N次) 构成BN*BN 的矩阵
         # mask-out self-contrast cases
         logits_mask = torch.scatter(
             torch.ones_like(mask),
