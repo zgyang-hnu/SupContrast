@@ -81,7 +81,7 @@ class SupConLoss(nn.Module):
             1,
             torch.arange(batch_size * anchor_count).view(-1, 1).to(device),
             0
-        )#将对角元素置0
+        )#得到一个对角元素为0的 全1矩阵
         mask = mask * logits_mask
 
         # compute log_prob
